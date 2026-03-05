@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
-
 import httpx
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, HTTPException, requests
 
 app = FastAPI(title="riksdags_data")
@@ -18,10 +18,25 @@ async def get_posts():#funktion för att hämta data från det externa api
         if response.status_code == 200: #kollar att anropet gick bra 200=ok
             global cached_data #så funktionen hittar den globala variabeln och inte skapar en ny egen
             cached_data = response.json() #omvandlar svaret till json och sparar detta till det listan
+            # TODO här kanske det är rimligt att lägga in kafka? att kafka reagerar när man uppdaterar
             print("datan är uppdaterad")
         else:
             raise HTTPException(status_code=response.status_code, detail="fel från externt api")
 
-@asynccontextmanager #decorator
-async def lifespan():
-    yield
+@asynccontextmanager #decorator för att göra funktionen till en context manager
+#gör att fastapi förstår att denna funktionen ska användas som ett lifespan
+async def lifespan(app: FastAPI):#styr vad som händer när appen startar och stängs ner
+
+    scheduler = AsyncIOScheduler() #skapa en ny scheduler som håller koll på när saker ska köras
+
+    scheduler.add_job(get_posts, trigger="interval", hours=24)  #ge schedulern ett jobb att köra get_posts en gång per dygn
+
+    # TODO kolla hur vi ska hantera att den bara uppdaterar när appen är startad lokalt. Kanske ok för detta projekt?
+    scheduler.start() #startar schedulern och börjar hålla koll på tiden
+
+    await get_posts() #hämtar data direkt vid uppstarten så att cached_data inte är tom
+
+    yield #det som är ovanför yield körs vid uppstart och det som är nedanför körs vid nedstängning
+
+    scheduler.shutdown()
+    
