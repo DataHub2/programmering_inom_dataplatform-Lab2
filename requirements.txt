@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+psycopg[binary]
+sqlalchemy
+aiokafka
+python-dotenv
+httpx
+apscheduler
