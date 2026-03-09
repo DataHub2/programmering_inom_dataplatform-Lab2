@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
 import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import FastAPI, HTTPException, requests
+from fastapi import FastAPI, HTTPException
 from starlette import status
+import pandas as pd
 
 EXTERNAL_API = "https://data.riksdagen.se/personlista/?iid=&fnamn=&enamn=&f_ar=&kn=&parti=&valkrets=&org=&utformat=json"
 
 cached_data = [] #tom lista för att lagra det som hämtas från api. Kan bli ett problem ifall större dataset.
+cached_df = pd.DataFrame() # tom dataframe
 # TODO kolla hur annars
 
 async def fetch_posts():#funktion för att hämta data från det externa api
@@ -16,7 +18,10 @@ async def fetch_posts():#funktion för att hämta data från det externa api
 
         if response.status_code == 200: #kollar att anropet gick bra 200=ok
             global cached_data #så funktionen hittar den globala variabeln och inte skapar en ny egen
+            global cached_df
             cached_data = response.json() #omvandlar svaret till json och sparar detta till det listan
+            cached_df = pd.DataFrame.from_dict(cached_data)
+            cached_df.to_csv("riksdagen.csv", index=False)
             # TODO här kanske det är rimligt att lägga in kafka? att kafka reagerar när man uppdaterar
             print("datan är uppdaterad")
         else:
@@ -41,9 +46,11 @@ async def lifespan(app: FastAPI):#styr vad som händer när appen startar och st
 
 app = FastAPI(title="riksdags_data", lifespan=lifespan) #skapar vår app kopplar detta till lifespan
 
-@app.get("/posts") 
-async def get_posts():
-    if not cached_data: #kolla om cached data är tom
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Data ej laddad")
-    return cached_data
 
+# TODO att ha en posts endpoint kan vara onödigt i det hela dataflödet. Men kan vara bra att ha lvar nu under utveckling för att enklare felsöka
+
+# @app.get("/posts")
+# async def get_posts():
+#     if not cached_data: #kolla om cached data är tom
+#         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Data ej laddad")
+#     return cached_data
