@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from extract import fetch_posts
 
 #Här fyller man i vilka api man vill hämta man anger url och vad csv filen ska heta. Kan göras hur många som helst
+#för att köra koden kör "uvicorn main:app --reload"
 APIS = [
     {"url":"https://data.riksdagen.se/personlista/?iid=&fnamn=&enamn=&f_ar=&kn=&parti=&valkrets=&rdlstatus=tjanst&org=&utformat=json&sort=sorteringsnamn&sortorder=asc&termlista="
         , "csv":"riksdagen.csv" },
