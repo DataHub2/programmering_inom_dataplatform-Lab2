@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "apscheduler>=3.11.2",
+    "confluent-kafka>=2.13.2",
     "fastapi[standard]>=0.135.1",
     "pandas>=3.0.1",
 ]
