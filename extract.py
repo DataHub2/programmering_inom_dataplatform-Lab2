@@ -5,7 +5,7 @@ import json
 from confluent_kafka import Producer
 
 # Configure Kafka producer cluster connection
-kafka_conf = {'bootstrap.servers': 'localhost:9092'}
+kafka_conf = {'bootstrap.servers': 'kafka:29092'}
 producer = Producer(kafka_conf)
 
 def delivery_report(err, msg):
