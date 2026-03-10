@@ -5,6 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
 from extract import fetch_posts
+from transform import transform_data
 
 #Här fyller man i vilka api man vill hämta man anger url och vad csv filen ska heta. Kan göras hur många som helst
 #för att köra koden kör "uvicorn main:app --reload"
@@ -33,6 +34,8 @@ def csv_to_df(csv_path: str) -> pd.DataFrame:
     return pd.read_csv(csv_path)
 
 raw_df_riksdagen = csv_to_df("riksdagen.csv")
+
+transformed_df_riksdagen = transform_data(raw_df_riksdagen)#exempel på hur man använder transform
 
 # TODO att ha en posts endpoint kan vara onödigt i det hela dataflödet. Men kan vara bra att ha lvar nu under utveckling för att enklare felsöka
 
