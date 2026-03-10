@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager
+
+import pandas as pd
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
@@ -26,7 +28,11 @@ async def lifespan(app: FastAPI): # styr vad som händer när appen startar och 
 
 app = FastAPI(title="riksdags_data", lifespan=lifespan) # skapa appen och koppla lifespanshutdown()
 
+#TODO ska detta ligga här?
+def csv_to_df(csv_path: str) -> pd.DataFrame:
+    return pd.read_csv(csv_path)
 
+raw_df_riksdagen = csv_to_df("riksdagen.csv")
 
 # TODO att ha en posts endpoint kan vara onödigt i det hela dataflödet. Men kan vara bra att ha lvar nu under utveckling för att enklare felsöka
 
