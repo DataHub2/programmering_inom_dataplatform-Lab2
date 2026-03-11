@@ -7,12 +7,14 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app/app
+      - ./app:/app
     env_file:
       - .env
     depends_on:
-      - db
-      - riksdagen_broker
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     networks:
       - app_network
 
@@ -27,13 +29,13 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "your_username"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  riksdagen_broker:
-    image: confluentinc/cp-kafka:latest
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
     container_name: riksdagen_logg_server
     ports:
       - "9092:9092"
@@ -41,22 +43,22 @@ services:
       KAFKA_NODE_ID: 1
       CLUSTER_ID: 'riksdagen_data_kluster'
       KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-      KAFKA_LISTENERS: 'PLAINTEXT://riksdagen_broker:29092,CONTROLLER://riksdagen_broker:29093,PLAINTEXT_HOST://0.0.0.0:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://riksdagen_broker:29092,PLAINTEXT_HOST://localhost:9092'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@riksdagen_broker:29093'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_LISTENERS: 'INTERNAL://kafka:29092,CONTROLLER://kafka:29093,EXTERNAL://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:29092,EXTERNAL://localhost:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
     networks:
       - app_network
     healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "riksdagen_broker:29092", "--list"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

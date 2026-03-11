@@ -1,26 +1,34 @@
 FROM python:3.11-slim
 
-# Säker och stabil Python setup
+# Miljövariabler
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+# Arbetar i /app katalogen
 WORKDIR /app
 
-# System dependencies för PostgreSQL och andra verktyg
-RUN apt-get update && apt-get install -y \
+# Installera nödvändiga paket
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
+    build-essential \
+    librdkafka-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Installera Python dependencies först (caching!)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Installera uv
+RUN pip install --no-cache-dir uv
 
-# Kopiera applikationen
-COPY main.py .
+# Kopiera projektfiler
+COPY pyproject.toml uv.lock* requirements.txt ./
 
-# Exponera port
+# Installera beroenden
+RUN uv pip install --system -r requirements.txt || pip install -r requirements.txt
+
+# Kopiera övriga filer
+COPY . .
+
+# Exponera port 8000
 EXPOSE 8000
 
-# Starta FastAPI med Uvicorn
+# Starta applikationen
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
