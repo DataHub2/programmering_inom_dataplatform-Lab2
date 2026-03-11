@@ -10,8 +10,16 @@ from transform import transform_data
 #Här fyller man i vilka api man vill hämta man anger url och vad csv filen ska heta. Kan göras hur många som helst
 #för att köra koden kör "uvicorn main:app --reload"
 APIS = [
-    {"url":"https://data.riksdagen.se/personlista/?iid=&fnamn=&enamn=&f_ar=&kn=&parti=&valkrets=&rdlstatus=tjanst&org=&utformat=json&sort=sorteringsnamn&sortorder=asc&termlista="
-        , "csv":"data/riksdagen.csv" },
+    {"url":"https://data.riksdagen.se/kalender/?org=kamm&utformat=json"
+        , "csv":"data/kalender.csv" },
+    {"url": "https://data.riksdagen.se/personlista/?utformat=json"
+        , "csv": "data/ledamoter.csv"},
+    {"url": "https://data.riksdagen.se/dokumentlista/?sz=500&utformat=json"
+        , "csv": "data/dokument.csv"},
+    {"url": "https://data.riksdagen.se/voteringlista/?sz=500&utformat=json"
+        , "csv": "data/voteringar.csv"},
+    {"url": "https://data.riksdagen.se/anforandelista/?sz=500&utformat=json"
+        , "csv": "data/anforanden.csv"},
 ]
 
 
