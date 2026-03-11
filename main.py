@@ -11,7 +11,7 @@ from transform import transform_data
 #för att köra koden kör "uvicorn main:app --reload"
 APIS = [
     {"url":"https://data.riksdagen.se/personlista/?iid=&fnamn=&enamn=&f_ar=&kn=&parti=&valkrets=&rdlstatus=tjanst&org=&utformat=json&sort=sorteringsnamn&sortorder=asc&termlista="
-        , "csv":"riksdagen.csv" },
+        , "csv":"data/riksdagen.csv" },
 ]
 
 
@@ -33,9 +33,11 @@ app = FastAPI(title="riksdags_data", lifespan=lifespan) # skapa appen och koppla
 def csv_to_df(csv_path: str) -> pd.DataFrame:
     return pd.read_csv(csv_path)
 
-raw_df_riksdagen = csv_to_df("riksdagen.csv")
+raw_df_riksdagen = csv_to_df("data/riksdagen.csv")
 
 transformed_df_riksdagen = transform_data(raw_df_riksdagen)#exempel på hur man använder transform
+
+print(transformed_df_riksdagen.head())
 
 # TODO att ha en posts endpoint kan vara onödigt i det hela dataflödet. Men kan vara bra att ha lvar nu under utveckling för att enklare felsöka
 

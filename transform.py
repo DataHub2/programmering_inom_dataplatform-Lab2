@@ -10,6 +10,6 @@ def transform_data(df):#function for cleaning up raw data
 
 # TODO har vi ens en created at? hur lägger vi till det isf
     #tranform the date to a correct date using coerce to not crash the program
-    df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
+    # df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
 
     return df
