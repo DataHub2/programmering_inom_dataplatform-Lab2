@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   fastapi:
     build: .
     container_name: fastapi_app
@@ -13,7 +12,7 @@ services:
       - .env
     depends_on:
       - db
-      - kafka
+      - riksdagen_broker
     networks:
       - app_network
 
@@ -33,8 +32,8 @@ services:
       timeout: 10s
       retries: 3
 
-  kafka:
-    image: confluentinc/cp-kafka:7.6.0
+  riksdagen_broker:
+    image: confluentinc/cp-kafka:latest
     container_name: riksdagen_logg_server
     ports:
       - "9092:9092"
@@ -42,20 +41,19 @@ services:
       KAFKA_NODE_ID: 1
       CLUSTER_ID: 'riksdagen_data_kluster'
       KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://riksdagen_broker:29092,CONTROLLER://riksdagen_broker:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://riksdagen_broker:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@riksdagen_broker:29093'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
     networks:
       - app_network
     healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--list"]
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "riksdagen_broker:29092", "--list"]
       interval: 30s
       timeout: 10s
       retries: 3
