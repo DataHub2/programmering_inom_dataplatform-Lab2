@@ -25,6 +25,7 @@ async def lifespan(app: FastAPI): # styr vad som händer när appen startar och 
 app = FastAPI(title="riksdags_data", lifespan=lifespan) # skapa appen och koppla lifespanshutdown()
 
 
+
 # #TODO ska detta ligga här?
 # def csv_to_df(csv_path: str) -> pd.DataFrame:
 #     return pd.read_csv(csv_path)
