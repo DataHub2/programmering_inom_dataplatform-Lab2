@@ -19,12 +19,11 @@ APIS = [
         "url": "https://data.riksdagen.se/personlista/?utformat=json",
         "csv": "data/ledamoter.csv",
         "record_path": ["personlista", "person"],
-        "keep": ["tilltalsnamn", "efternamn", "parti", "valkrets", "status", "fodd_ar", "kon", "iort",
+        "keep": ["tilltalsnamn", "efternamn", "parti", "valkrets", "status", "fodd_ar", "kon",
                  "person_url_xml", "bild_url_80"],
         "rename": {
             "tilltalsnamn": "fornamn",
             "fodd_ar":      "fodelsear",
-            "iort":         "hemort",
             "status":       "riksdagsstatus",
         },
     },
