@@ -16,13 +16,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Installera uv
-RUN pip install --no-cache-dir uv
+RUN pip install uv
 
 # Kopiera projektfiler
-COPY pyproject.toml uv.lock* requirements.txt ./
+COPY pyproject.toml uv.lock ./
 
 # Installera beroenden
-RUN uv pip install --system -r requirements.txt || pip install -r requirements.txt
+RUN uv sync --frozen
 
 # Kopiera övriga filer
 COPY . .
@@ -31,4 +31,4 @@ COPY . .
 EXPOSE 8000
 
 # Starta applikationen
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
