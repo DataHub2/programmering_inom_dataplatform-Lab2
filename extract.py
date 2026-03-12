@@ -9,7 +9,7 @@ kafka_conf = {'bootstrap.servers': 'kafka:29092'}
 producer = Producer(kafka_conf)
 
 def delivery_report(err, msg):
-    # Only report errors to prevent terminal flooding
+    # Only report errors to prevent terminal flooding.
     if err is not None:
         print(f"Message delivery failed: {err}")
 
