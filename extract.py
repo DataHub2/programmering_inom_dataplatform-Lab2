@@ -26,8 +26,6 @@ async def fetch_posts(
     url: str,           # [FRÅN MAIN] URL till externt API
     csv_path: str,      # [FRÅN MAIN] Sökväg där CSV-filen sparas lokalt
     record_path: list = None,  # [FRÅN MAIN] Navigerar nästlad JSON, t.ex. ["kalender", "händelse"]
-    keep: list = None,         # [FRÅN MAIN] Vilka kolumner som ska behållas efter formatering
-    rename: dict = None,       # [FRÅN MAIN] Namnbyte av kolumner, t.ex. {"id": "person_id"}
     kafka_topic: str = None,   # [TILLAGD FRÅN ZAKARIA] Topic att streama till, t.ex. "riksdagen_raw_data"
 ):
     # [FRÅN MAIN] Öppnar en asynkron HTTP-klient som stängs automatiskt när blocket är klart
@@ -51,7 +49,7 @@ async def fetch_posts(
                     cached_df = pd.json_normalize(cached_data)  # [FRÅN MAIN] Fallback om JSON redan är platt
 
                 # [FRÅN MAIN] Kör formatering direkt efter hämtning så CSV alltid är städad
-                cached_df = format_files(cached_df, keep=keep, rename=rename)
+                cached_df = format_files(cached_df)
 
                 # [TILLAGD FRÅN ZAKARIA] Kafka-streaming — körs bara om kafka_topic är angiven
                 if kafka_topic:
