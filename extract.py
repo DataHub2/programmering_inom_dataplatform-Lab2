@@ -84,5 +84,3 @@ async def fetch_posts(
         else:
             # [FRÅN MAIN] Vidarebefordrar felkoden från det externa API:et
             raise HTTPException(status_code=response.status_code, detail="Fel från externt API")
-message.txt
-5 KB
