@@ -167,16 +167,28 @@ def run_flags(
 
     return flags
 
-# Example of running the flagging step independently for testing
 if __name__ == "__main__":
     from clean import clean
 
-    df_ledamoter = clean(pd.read_csv("../data/ledamoter.csv"))
-    df_voteringar = clean(pd.read_csv("../data/voteringar.csv"))
-    df_anforanden = clean(pd.read_csv("../data/anforanden.csv"))
+    df_ledamoter, rejected_ledamoter = clean(
+        pd.read_csv("../data/ledamoter.csv"),
+        critical_cols=["intressent_id", "efternamn", "tilltalsnamn"]
+    )
+    df_voteringar, rejected_voteringar = clean(
+        pd.read_csv("../data/voteringar.csv"),
+        critical_cols=["votering_id", "namn"]
+    )
+    df_anforanden, rejected_anforanden = clean(
+        pd.read_csv("../data/anforanden.csv"),
+        critical_cols=["anforande_id", "talare"]
+    )
 
     results = run_flags(df_ledamoter, df_voteringar, df_anforanden)
 
     for flag_name, df_flag in results.items():
         print(f"\n{flag_name}: {len(df_flag)} rows")
         print(df_flag[["flag_reason", "flag_source", "flag_col"]].head(3).to_string(index=False))
+
+    print(f"\nRejected ledamoter: {len(rejected_ledamoter)} rows")
+    print(f"Rejected voteringar: {len(rejected_voteringar)} rows")
+    print(f"Rejected anforanden: {len(rejected_anforanden)} rows")
