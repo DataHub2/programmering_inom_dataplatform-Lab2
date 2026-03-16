@@ -26,7 +26,7 @@ def clean(df: pd.DataFrame, critical_cols: list[str] = None) -> tuple[pd.DataFra
         if col in df.columns:
             df[col] = df[col].map(lambda x: bool_map.get(x, x) if pd.notna(x) else x)
 
-    # Separera rejected rader
+    # Separates rejected rows --> Christoffers önskan!
     if critical_cols:
         existing_cols = [c for c in critical_cols if c in df.columns]
         rejected_mask = df[existing_cols].isna().any(axis=1)
