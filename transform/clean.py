@@ -9,7 +9,7 @@ def clean(df: pd.DataFrame, critical_cols: list[str] = None) -> tuple[pd.DataFra
     - Normalize j/n values -> voteringar
     - Separera rader med null i kritiska kolumner
     """
-    str_cols = df.select_dtypes(include=["object", "str"]).columns
+    str_cols = df.select_dtypes(include="object").columns
 
     # White spaces
     df[str_cols] = df[str_cols].apply(lambda col: col.str.strip())
