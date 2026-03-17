@@ -1,9 +1,8 @@
 import pandas as pd
 
-
-
 # Runs after the cleaning step. Takes cleaned DataFrames as input and returns
 # a dict of flag tables to be passed on to the reject handler.
+
 
 def flag_null_id(df: pd.DataFrame, id_col: str, source: str) -> pd.DataFrame:
     """
@@ -41,7 +40,7 @@ def flag_null_namn(df: pd.DataFrame, namn_cols: list[str], source: str) -> pd.Da
     existing_cols = [c for c in namn_cols if c in df.columns]
     if not existing_cols:
         return pd.DataFrame()  # no name columns present, nothing to flag
-    
+
     mask = df[existing_cols].apply(
         lambda col: col.isna() | (col.astype(str).str.strip() == "")
     ).all(axis=1)
@@ -76,7 +75,6 @@ def flag_franvaro_topp10(df_voteringar: pd.DataFrame) -> pd.DataFrame:
 
     topp10_franvaro_ids = franvaro.head(10)["intressent_id"].tolist()
 
-    
     # Attendance rate per member (lowest absence share = highest attendance)
     totalt = (
         df_voteringar
@@ -128,7 +126,6 @@ def run_flags(
     Returns:
         Dict mapping flag name to DataFrame of flagged rows
     """
-
     flags: dict[str, pd.DataFrame] = {}
 
     # Null ID
@@ -167,28 +164,16 @@ def run_flags(
 
     return flags
 
+
 if __name__ == "__main__":
     from clean import clean
 
-    df_ledamoter, rejected_ledamoter = clean(
-        pd.read_csv("../data/ledamoter.csv"),
-        critical_cols=["intressent_id", "efternamn", "tilltalsnamn"]
-    )
-    df_voteringar, rejected_voteringar = clean(
-        pd.read_csv("../data/voteringar.csv"),
-        critical_cols=["votering_id", "namn"]
-    )
-    df_anforanden, rejected_anforanden = clean(
-        pd.read_csv("../data/anforanden.csv"),
-        critical_cols=["anforande_id", "talare"]
-    )
+    df_ledamoter = clean(pd.read_csv("../data/ledamoter.csv"))
+    df_voteringar = clean(pd.read_csv("../data/voteringar.csv"))
+    df_anforanden = clean(pd.read_csv("../data/anforanden.csv"))
 
     results = run_flags(df_ledamoter, df_voteringar, df_anforanden)
 
     for flag_name, df_flag in results.items():
         print(f"\n{flag_name}: {len(df_flag)} rows")
         print(df_flag[["flag_reason", "flag_source", "flag_col"]].head(3).to_string(index=False))
-
-    print(f"\nRejected ledamoter: {len(rejected_ledamoter)} rows")
-    print(f"Rejected voteringar: {len(rejected_voteringar)} rows")
-    print(f"Rejected anforanden: {len(rejected_anforanden)} rows")
