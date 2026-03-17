@@ -6,7 +6,6 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     - Erase whitespace 
     - Make all small letters
     - Change empty strings to Null
-    - Normalize j/n values -> voteringar
     """
     str_cols = df.select_dtypes(include="object").columns
 
@@ -19,15 +18,12 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     # Empty strings to Null
     df[str_cols] = df[str_cols].apply(lambda col: col.replace("", pd.NA))
 
-    # Normalize j/n values in voteringar
-    bool_map = {"j": True, "n": False, "ja": True, "nej": False}
-    for col in ["ar_replik", "rost"]:
-        if col in df.columns:
-            df[col] = df[col].map(lambda x: bool_map.get(x, x) if pd.notna(x) else x)
+    # Removed: bool_map that converted j/n to True/False in rost and ar_replik
+    # caused mixed datatypes (bool + str) in same column, inconsistent for db storage -> som vi diskuterade 
 
     return df
 
-# startar clean.
+
 if __name__ == "__main__":
     files = [
         "data/ledamoter.csv",
