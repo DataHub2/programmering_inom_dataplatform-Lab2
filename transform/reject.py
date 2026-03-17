@@ -39,6 +39,38 @@ def add_flags(
 
     return df
 
+def reject_ledamoter(df: pd.DataFrame) -> pd.DataFrame:
+    return df.drop(columns=[
+        "hangar_guid",           # internt system-ID
+        "sourceid",              # internt system-ID
+        "hangar_id",             # internt system-ID
+        "bild_url_80",           # bildurl
+        "bild_url_192",          # bildurl
+        "bild_url_max",          # bildurl
+        "person_url_xml",        # XML-url
+        "sorteringsnamn",        # redundant — finns i efternamn + tilltalsnamn
+        "personuppdrag.uppdrag", # stor JSON-blob
+        "personuppgift.uppgift", # stor JSON-blob
+    ])
+
+def reject_voteringar(df: pd.DataFrame) -> pd.DataFrame:
+    return df.drop(columns=[
+        "hangar_id",        # internt system-ID
+        "votering_url_xml", # XML-url
+        "systemdatum",      # internt
+        "iort",             # nästan alltid tomt
+    ])
+
+
+def reject_anforanden(df: pd.DataFrame) -> pd.DataFrame:
+    return df.drop(columns=[
+        "dok_hangar_id",      # internt system-ID
+        "anforande_url_xml",  # XML-url
+        "anforande_url_html", # HTML-url
+        "protokoll_url_www",  # url
+        "systemdatum",        # internt
+        "systemnyckel",       # internt
+    ])
 
 def transform(
     df_ledamoter: pd.DataFrame,
@@ -73,26 +105,31 @@ def transform(
             if v["flag_source"].eq(name).any()
         }
 
-        # Lägg till flag_reason på datasetet
-        result[name] = add_flags(df, relevant_flags, id_col)
+        #lägg till flag_reason på datasetet
+        df = add_flags(df, relevant_flags, id_col)
+
+        #ta bort onödiga kolumner per dataset
+        if name == "ledamoter":
+            df = reject_ledamoter(df)
+        elif name == "voteringar":
+            df = reject_voteringar(df)
+        elif name == "anforanden":
+            df = reject_anforanden(df)
+
+        result[name] = df
 
     return result
 
 
 if __name__ == "__main__":
-    # Läs och städa
+    # Läs och städa alla datasets
     df_ledamoter  = clean(pd.read_csv("data/ledamoter.csv"))
     df_voteringar = clean(pd.read_csv("data/voteringar.csv"))
     df_anforanden = clean(pd.read_csv("data/anforanden.csv"))
     # TODO: df_kalender = clean(pd.read_csv("data/kalender.csv")) när flag.py är klar
     # TODO: df_dokument = clean(pd.read_csv("data/dokument.csv")) när flag.py är klar
 
-    # Tillfällig debug — kolla vad run_flags faktiskt hittar
-    flags = run_flags(df_ledamoter, df_voteringar, df_anforanden)
-    for name, df in flags.items():
-        print(f"{name}: {len(df)} rader")
-
-    # Lägg till flaggkolumner
+    # Kör transform
     result = transform(df_ledamoter, df_voteringar, df_anforanden)
     # TODO: skicka med df_kalender och df_dokument till transform när de är klara
 
@@ -100,3 +137,5 @@ if __name__ == "__main__":
     for name, df in result.items():
         flagged_count = (df["flag_reason"] != "").sum()
         print(f"{name}: {len(df)} rader, {flagged_count} flaggade")
+        print(f"  kolumner: {df.columns.tolist()}")
+        print()
