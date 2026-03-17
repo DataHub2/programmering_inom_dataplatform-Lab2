@@ -3,71 +3,65 @@ from clean import clean
 from flag import run_flags
 
 
-def build_flag_columns(
+def add_flags(
     df: pd.DataFrame,
     flags: dict[str, pd.DataFrame],
     id_col: str,
 ) -> pd.DataFrame:
-
-    # Jobba på en kopia så vi inte förstör originalet
+    # Jobba på en kopia
     df = df.copy()
 
-    # Alla rader börjar med tom flagga
-    df["flag"] = ""
+    # Börja med tom flaggkolumn på alla rader
+    df["flag_reason"] = ""
 
-    # Om inga flaggor finns, returnera direkt med tomma flaggkolumnen
+    # Om inga flaggor finns, returnera direkt
     if not flags:
         return df
 
-    # Slå ihop alla flaggtabeller till en enda DataFrame
+    # Slå ihop alla flaggtabeller till en
     flag_df = pd.concat(flags.values(), ignore_index=True)
 
-    # Gruppera per id så att en rad med flera flaggor får dem samlade
-    # t.ex. "null_id, null_namn" istället för två separata rader
+    # Gruppera per id — en rad kan ha flera flaggor t.ex. "null_id, null_namn"
     grouped = (
         flag_df.groupby(id_col)["flag_reason"]
-        .apply(lambda reasons: ", ".join(reasons))  # slå ihop till en sträng
-        .reset_index()                               # gör id_col till kolumn igen
-        .rename(columns={"flag_reason": "flag"})     # döp om till 'flag'
+        .apply(lambda x: ", ".join(x))
+        .reset_index()
     )
 
-    # Joina flaggorna tillbaka på hela datasetet
-    # how="left" behåller alla rader — rena rader får NaN i flag-kolumnen
+    # Joina flaggorna på hela datasetet
     df = df.merge(grouped, on=id_col, how="left", suffixes=("", "_new"))
 
-    # Fyll i flaggkolumnen — rader utan flagga (NaN) får tom sträng
-    df["flag"] = df["flag_new"].fillna("")
+    # Fyll i flaggkolumnen — rader utan flagga får tom sträng
+    df["flag_reason"] = df["flag_reason_new"].fillna("")
 
-    # Ta bort hjälpkolumnen som merge skapade
-    df = df.drop(columns=["flag_new"])
+    # Ta bort hjälpkolumnen
+    df = df.drop(columns=["flag_reason_new"])
 
     return df
 
 
-def reject(
+def transform(
     df_ledamoter: pd.DataFrame,
     df_voteringar: pd.DataFrame,
     df_anforanden: pd.DataFrame,
-    # TODO: lägg till df_kalender: pd.DataFrame här när ID-kolumn är känd
-    # TODO: lägg till df_dokument: pd.DataFrame här när ID-kolumn är känd
+    # TODO: lägg till df_kalender: pd.DataFrame när flag.py har flaggar för kalender
+    # TODO: lägg till df_dokument: pd.DataFrame när flag.py har flaggar för dokument
 ) -> dict[str, pd.DataFrame]:
 
-    # Kör alla flaggkontroller
+    # Hämta alla flaggor från flag.py
     flags = run_flags(df_ledamoter, df_voteringar, df_anforanden)
     # TODO: skicka med df_kalender och df_dokument till run_flags när de är klara
 
-    # TODO: rost-kolumnen konverteras till True/False i clean.py men
-    # flag_franvaro_topp10 letar efter strängen "frånvarande" — stämmer inte ihop.
-    # Skippar denna flagga tills rost-logiken är fixad.
+    # TODO: ta bort när rost är fixad i clean.py
     flags.pop("narvaro_franvaro_topp10", None)
 
-    # Varje dataset mappat mot sitt ID-kolumnnamn
+    # Varje dataset med sitt ID-kolumnnamn
     datasets = {
         "ledamoter":  (df_ledamoter,  "intressent_id"),
         "voteringar": (df_voteringar, "votering_id"),
         "anforanden": (df_anforanden, "anforande_id"),
-        # TODO: lägg till "kalender": (df_kalender, "??_id") när ID-kolumn är känd
-        # TODO: lägg till "dokument": (df_dokument, "??_id") när ID-kolumn är känd
+        # TODO: lägg till "kalender": (df_kalender, "UID") när flag.py är klar
+        # TODO: lägg till "dokument": (df_dokument, "id") när flag.py är klar
     }
 
     result = {}
@@ -79,34 +73,30 @@ def reject(
             if v["flag_source"].eq(name).any()
         }
 
-        # Lägg till flag-kolumnen på hela datasetet
-        df_with_flags = build_flag_columns(df.copy(), relevant_flags, id_col)
-
-        # Rader med tom flag-sträng är rena
-        result[f"{name}_clean"] = df_with_flags[
-            df_with_flags["flag"] == ""
-        ].copy()
-
-        # Rader med något i flag-kolumnen är flaggade
-        result[f"{name}_flagged"] = df_with_flags[
-            df_with_flags["flag"] != ""
-        ].copy()
+        # Lägg till flag_reason på datasetet
+        result[name] = add_flags(df, relevant_flags, id_col)
 
     return result
 
 
 if __name__ == "__main__":
-    # Läs och städa alla datasets
+    # Läs och städa
     df_ledamoter  = clean(pd.read_csv("data/ledamoter.csv"))
     df_voteringar = clean(pd.read_csv("data/voteringar.csv"))
     df_anforanden = clean(pd.read_csv("data/anforanden.csv"))
-    # TODO: df_kalender = clean(pd.read_csv("data/kalender.csv")) när ID-kolumn är känd
-    # TODO: df_dokument = clean(pd.read_csv("data/dokument.csv")) när ID-kolumn är känd
+    # TODO: df_kalender = clean(pd.read_csv("data/kalender.csv")) när flag.py är klar
+    # TODO: df_dokument = clean(pd.read_csv("data/dokument.csv")) när flag.py är klar
 
-    # Kör reject-steget
-    results = reject(df_ledamoter, df_voteringar, df_anforanden)
-    # TODO: skicka med df_kalender och df_dokument till reject när de är klara
-
-    # Skriv ut summering — hur många rena vs flaggade rader per dataset
-    for name, df in results.items():
+    # Tillfällig debug — kolla vad run_flags faktiskt hittar
+    flags = run_flags(df_ledamoter, df_voteringar, df_anforanden)
+    for name, df in flags.items():
         print(f"{name}: {len(df)} rader")
+
+    # Lägg till flaggkolumner
+    result = transform(df_ledamoter, df_voteringar, df_anforanden)
+    # TODO: skicka med df_kalender och df_dokument till transform när de är klara
+
+    # Skriv ut summering
+    for name, df in result.items():
+        flagged_count = (df["flag_reason"] != "").sum()
+        print(f"{name}: {len(df)} rader, {flagged_count} flaggade")
