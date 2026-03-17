@@ -177,3 +177,4 @@ if __name__ == "__main__":
     for flag_name, df_flag in results.items():
         print(f"\n{flag_name}: {len(df_flag)} rows")
         print(df_flag[["flag_reason", "flag_source", "flag_col"]].head(3).to_string(index=False))
+
