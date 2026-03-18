@@ -125,7 +125,7 @@ def transform(
     # Varje dataset med sitt ID-kolumnnamn
     datasets = {
         "ledamoter":  (df_ledamoter,  "intressent_id"),
-        "voteringar": (df_voteringar, "votering_id"),
+        "voteringar": (df_voteringar, "intressent_id"),
         "anforanden": (df_anforanden, "anforande_id"),
         "kalender": (df_kalender, "UID"),
         "dokument": (df_dokument, "id"),
