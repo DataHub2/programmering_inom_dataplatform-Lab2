@@ -72,28 +72,63 @@ def reject_anforanden(df: pd.DataFrame) -> pd.DataFrame:
         "systemnyckel",       # internt
     ])
 
+def reject_kalender(df: pd.DataFrame) -> pd.DataFrame:
+    return df.drop(columns=[
+        "TRANSP",          # tekniskt iCal-fält, alltid TRANSPARENT
+        "XRDREST",         # intern REST-url
+        "XRDSOURCEID",     # internt system-ID
+        "XRDDOKID",        # internt dok-ID
+        "XRDDOKRELID",     # internt relationsID
+        "XRDDTSTARTSTATUS",# internt statusfält
+        "XRDSOURCE",       # intern källkod (t.ex. "Safir")
+        "XRDSORT",         # intern sorteringstid
+    ])
+
+def reject_dokument(df: pd.DataFrame) -> pd.DataFrame:
+    return df.drop(columns=[
+        "systemdatum",                    # internt
+        "rdrest",                         # intern REST-url
+        "rddata",                         # intern data-url
+        "relurl",                         # relativ url (redundant med url)
+        "score",                          # sökrankning, inte analytiskt relevant
+        "tempbeteckning",                 # temporär beteckning
+        "sokdata.soktyp",                 # intern sökkategori
+        "sokdata.statusrad",              # intern statusrad
+        "sokdata.brodsmula",              # navigation breadcrumb
+        "sokdata.parti_website_url",      # url
+        "sokdata.parti_website_namn",     # url-text
+        "sokdata.parti_epost",            # kontaktinfo
+        "sokdata.parti_telefon",          # kontaktinfo
+        "sokdata.parti_telefontider",     # kontaktinfo
+        "sokdata.parti_logotyp_img_id",   # bild-ID
+        "sokdata.parti_logotyp_img_url",  # bild-url
+        "sokdata.parti_logotyp_img_alt",  # bild-alt
+        "sokdata.kalenderprio",           # intern prioritet
+        "egenskaper.egenskap",            # intern metadata-blob
+        "avdelningar.avdelning",          # redundant med avdelning
+    ])
+
 def transform(
     df_ledamoter: pd.DataFrame,
     df_voteringar: pd.DataFrame,
     df_anforanden: pd.DataFrame,
-    # TODO: lägg till df_kalender: pd.DataFrame när flag.py har flaggar för kalender
-    # TODO: lägg till df_dokument: pd.DataFrame när flag.py har flaggar för dokument
+    df_kalender: pd.DataFrame,
+    df_dokument: pd.DataFrame,
 ) -> dict[str, pd.DataFrame]:
 
     # Hämta alla flaggor från flag.py
-    flags = run_flags(df_ledamoter, df_voteringar, df_anforanden)
-    # TODO: skicka med df_kalender och df_dokument till run_flags när de är klara
+    flags = run_flags(df_ledamoter, df_voteringar, df_anforanden, df_kalender, df_dokument)
 
     # TODO: ta bort när rost är fixad i clean.py
-    flags.pop("narvaro_franvaro_topp10", None)
+    #flags.pop("narvaro_franvaro_topp10", None)
 
     # Varje dataset med sitt ID-kolumnnamn
     datasets = {
         "ledamoter":  (df_ledamoter,  "intressent_id"),
         "voteringar": (df_voteringar, "votering_id"),
         "anforanden": (df_anforanden, "anforande_id"),
-        # TODO: lägg till "kalender": (df_kalender, "UID") när flag.py är klar
-        # TODO: lägg till "dokument": (df_dokument, "id") när flag.py är klar
+        "kalender": (df_kalender, "UID"),
+        "dokument": (df_dokument, "id"),
     }
 
     result = {}
@@ -126,12 +161,11 @@ if __name__ == "__main__":
     df_ledamoter  = clean(pd.read_csv("data/ledamoter.csv"))
     df_voteringar = clean(pd.read_csv("data/voteringar.csv"))
     df_anforanden = clean(pd.read_csv("data/anforanden.csv"))
-    # TODO: df_kalender = clean(pd.read_csv("data/kalender.csv")) när flag.py är klar
-    # TODO: df_dokument = clean(pd.read_csv("data/dokument.csv")) när flag.py är klar
+    df_kalender = clean(pd.read_csv("data/kalender.csv"))
+    df_dokument = clean(pd.read_csv("data/dokument.csv"))
 
     # Kör transform
-    result = transform(df_ledamoter, df_voteringar, df_anforanden)
-    # TODO: skicka med df_kalender och df_dokument till transform när de är klara
+    result = transform(df_ledamoter, df_voteringar, df_anforanden, df_kalender, df_dokument)
 
     # Skriv ut summering
     for name, df in result.items():
