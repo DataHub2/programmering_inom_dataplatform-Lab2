@@ -91,16 +91,22 @@ def flag_franvaro_topp10(df_voteringar: pd.DataFrame) -> pd.DataFrame:
         .tolist()
     )
 
-    # Build flag table
-    franvaro_rows = df_voteringar[
-        df_voteringar["intressent_id"].isin(topp10_franvaro_ids)
-        & (df_voteringar["rost"] == "frånvarande")
-    ].copy()
+    # One summary row per member — not all voting rows
+    franvaro_rows = (
+        df_voteringar[
+            df_voteringar["intressent_id"].isin(topp10_franvaro_ids)
+            & (df_voteringar["rost"] == "frånvarande")
+        ]
+        .groupby("intressent_id", as_index=False)
+        .first()
+    )
     franvaro_rows["flag_reason"] = "topp10_franvaro"
 
-    narvaro_rows = df_voteringar[
-        df_voteringar["intressent_id"].isin(topp10_narvaro_ids)
-    ].copy()
+    narvaro_rows = (
+        df_voteringar[df_voteringar["intressent_id"].isin(topp10_narvaro_ids)]
+        .groupby("intressent_id", as_index=False)
+        .first()
+    )
     narvaro_rows["flag_reason"] = "topp10_narvaro"
 
     flagged = pd.concat([franvaro_rows, narvaro_rows], ignore_index=True)
