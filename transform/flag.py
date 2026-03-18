@@ -113,6 +113,8 @@ def run_flags(
     df_ledamoter: pd.DataFrame,
     df_voteringar: pd.DataFrame,
     df_anforanden: pd.DataFrame,
+    df_kalender: pd.DataFrame,
+    df_dokument: pd.DataFrame,
 ) -> dict[str, pd.DataFrame]:
     """
     Runs all flag checks and returns a dict of flag tables.
@@ -122,6 +124,8 @@ def run_flags(
         df_ledamoter:   Cleaned ledamoter DataFrame
         df_voteringar:  Cleaned voteringar DataFrame
         df_anforanden:  Cleaned anforanden DataFrame
+        df_kalender:    Cleaned kalender DataFrame
+        df_dokument:    Cleaned dokument DataFrame
 
     Returns:
         Dict mapping flag name to DataFrame of flagged rows
@@ -137,6 +141,12 @@ def run_flags(
     )
     flags["null_id_anforanden"] = flag_null_id(
         df_anforanden, id_col="anforande_id", source="anforanden"
+    )
+    flags["null_id_kalender"] = flag_null_id(
+        df_kalender, id_col="UID", source="kalender"
+    )
+    flags["null_id_dokument"] = flag_null_id(
+        df_dokument, id_col="id", source="dokument"
     )
 
     # Null name
@@ -168,13 +178,14 @@ def run_flags(
 if __name__ == "__main__":
     from clean import clean
 
-    df_ledamoter = clean(pd.read_csv("../data/ledamoter.csv"))
+    df_ledamoter  = clean(pd.read_csv("../data/ledamoter.csv"))
     df_voteringar = clean(pd.read_csv("../data/voteringar.csv"))
     df_anforanden = clean(pd.read_csv("../data/anforanden.csv"))
+    df_kalender   = clean(pd.read_csv("../data/kalender.csv"))
+    df_dokument   = clean(pd.read_csv("../data/dokument.csv"))
 
-    results = run_flags(df_ledamoter, df_voteringar, df_anforanden)
+    results = run_flags(df_ledamoter, df_voteringar, df_anforanden, df_kalender, df_dokument)
 
     for flag_name, df_flag in results.items():
         print(f"\n{flag_name}: {len(df_flag)} rows")
         print(df_flag[["flag_reason", "flag_source", "flag_col"]].head(3).to_string(index=False))
-
