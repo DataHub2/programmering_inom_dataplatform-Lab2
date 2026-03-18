@@ -2,7 +2,6 @@ import pandas as pd
 from clean import clean
 from flag import run_flags
 
-
 def add_flags(
     df: pd.DataFrame,
     flags: dict[str, pd.DataFrame],
@@ -119,7 +118,6 @@ def transform(
     # Hämta alla flaggor från flag.py
     flags = run_flags(df_ledamoter, df_voteringar, df_anforanden, df_kalender, df_dokument)
 
-    # TODO: ta bort när rost är fixad i clean.py
     #flags.pop("narvaro_franvaro_topp10", None)
 
     # Varje dataset med sitt ID-kolumnnamn
