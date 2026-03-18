@@ -73,6 +73,22 @@ services:
     networks:
       - app_network
 
+  streamlit:
+    build: .
+    container_name: streamlit_app
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network
+    command: [ "uv", "run", "streamlit", "run", "dashboard.py", "--server.port=8501", "--server.address=0.0.0.0" ]
+
 volumes:
   postgres_data:
 

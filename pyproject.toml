@@ -9,4 +9,6 @@ dependencies = [
     "confluent-kafka>=2.13.2",
     "fastapi[standard]>=0.135.1",
     "pandas>=3.0.1",
+    "streamlit>=1.19.0",
+    "altair>=4.0.0,<5.0.0",
 ]
