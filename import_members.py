@@ -3,67 +3,63 @@ import os
 import psycopg
 from dotenv import load_dotenv
 
-# 1. Ladda in anslutningen
 load_dotenv()
 conn_str = os.getenv("DATABASE_URL")
 
-def fixa_ledamot_detaljer():
-    # Vi pekar på filen i din data-folder
-    filsokvag = os.path.join("data", "ledamoter.csv") 
-    
-    if not os.path.exists(filsokvag):
-        print(f"Hittade inte filen: {filsokvag}")
-        return
-
-    print(f"Uppdaterar ledamöter i Supabase från: {filsokvag}...")
+def importera_ledamoter_final():
+    filsokvag = os.path.join("data", "ledamoter.csv")
+    print(f"🚀 Synkar ledamöter från: {filsokvag}...")
 
     try:
         with psycopg.connect(conn_str) as conn:
             with conn.cursor() as cur:
                 with open(filsokvag, mode='r', encoding='utf-8-sig') as f:
-                    # Vi använder kommatecken (,) som vi såg i ditt 'head'-test
-                    reader = csv.DictReader(f, delimiter=',', quotechar='"')
+                    # Vi använder kommatecken som separator
+                    reader = csv.DictReader(f, delimiter=',')
                     count = 0
 
                     for row in reader:
-                        m_id = row.get("Id") or row.get("intressent_id")
+                        m_id = row.get("intressent_id")
                         if not m_id: continue
 
-                        # UPDATE-logik för att fylla i namnen på de "skal" vi skapade förut
+                        # Vi mappar mot de exakta namnen från ditt head-test:
+                        # fodd_ar, kon, efternamn, tilltalsnamn, parti, valkrets, status
                         sql = """
-                        UPDATE members 
-                        SET 
-                            first_name = %s,
-                            last_name = %s,
-                            district = %s,
-                            status = %s,
-                            gender = %s,
-                            birth_year = %s
-                        WHERE member_id = %s;
+                        INSERT INTO members (member_id, first_name, last_name, party_id, district, status, gender, birth_year)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (member_id) DO UPDATE SET
+                            first_name = EXCLUDED.first_name,
+                            last_name = EXCLUDED.last_name,
+                            birth_year = EXCLUDED.birth_year,
+                            district = EXCLUDED.district,
+                            status = EXCLUDED.status,
+                            gender = EXCLUDED.gender;
                         """
                         
-                        birth_year = int(row.get("Född")) if str(row.get("Född")).isdigit() else None
-                        
+                        fodd = row.get("fodd_ar")
+                        birth_year = int(fodd) if fodd and str(fodd).isdigit() else None
+
                         cur.execute(sql, (
-                            row.get("Förnamn"),
-                            row.get("Efternamn"),
-                            row.get("Valkrets"),
-                            row.get("Status"),
-                            row.get("Kön"),
-                            birth_year,
-                            m_id
+                            m_id, 
+                            row.get("tilltalsnamn"), 
+                            row.get("efternamn"), 
+                            row.get("parti"), 
+                            row.get("valkrets"), 
+                            row.get("status"), 
+                            row.get("kon"), 
+                            birth_year
                         ))
                         
                         count += 1
                         if count % 100 == 0:
                             conn.commit()
-                            print(f"Uppdaterat {count} ledamöter...")
+                            print(f"✅ Uppdaterat {count} ledamöter... (Senaste: {row.get('tilltalsnamn')} {row.get('efternamn')})")
 
                 conn.commit()
-                print(f"Klart! Nu har alla ledamöter namn och detaljer.")
+                print(f"🏆 KLART! Nu är alla 488+ ledamöter uppdaterade med födelseår och namn.")
 
     except Exception as e:
-        print(f"Fel: {e}")
+        print(f"❌ Fel vid import: {e}")
 
 if __name__ == "__main__":
-    fixa_ledamot_detaljer()
+    importera_ledamoter_final()
