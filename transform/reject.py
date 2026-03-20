@@ -50,6 +50,7 @@ def reject_ledamoter(df: pd.DataFrame) -> pd.DataFrame:
         "sorteringsnamn",        # redundant — finns i efternamn + tilltalsnamn
         "personuppdrag.uppdrag", # stor JSON-blob
         "personuppgift.uppgift", # stor JSON-blob
+        "iort",                  # null
     ])
 
 def reject_voteringar(df: pd.DataFrame) -> pd.DataFrame:
@@ -69,6 +70,7 @@ def reject_anforanden(df: pd.DataFrame) -> pd.DataFrame:
         "protokoll_url_www",  # url
         "systemdatum",        # internt
         "systemnyckel",       # internt
+        "underrubrik",        # 100% null
     ])
 
 def reject_kalender(df: pd.DataFrame) -> pd.DataFrame:
@@ -81,6 +83,7 @@ def reject_kalender(df: pd.DataFrame) -> pd.DataFrame:
         "XRDDTSTARTSTATUS",# internt statusfält
         "XRDSOURCE",       # intern källkod (t.ex. "Safir")
         "XRDSORT",         # intern sorteringstid
+        "COMMENT",         # 100% null
     ])
 
 def reject_dokument(df: pd.DataFrame) -> pd.DataFrame:
@@ -105,6 +108,38 @@ def reject_dokument(df: pd.DataFrame) -> pd.DataFrame:
         "sokdata.kalenderprio",           # intern prioritet
         "egenskaper.egenskap",            # intern metadata-blob
         "avdelningar.avdelning",          # redundant med avdelning
+        "traff",                          # sökträffar — samma som score
+        "domain",                         # alltid "rdwebb"
+        "database",                       # alltid "kalender"
+        #alla 100% null nedanför
+        "plats",
+        "klockslag",
+        "inlamnad",
+        "motionstid",
+        "tilldelat",
+        "url",
+        "organ",
+        "relaterat_id",
+        "beteckning",
+        "nummer",
+        "dokintressent",
+        "filbilaga",
+        "struktur",
+        "audio",
+        "video",
+        "debattgrupp",
+        "debattdag",
+        "beslutsdag",
+        "beredningsdag",
+        "justeringsdag",
+        "beslutad",
+        "debattsekunder",
+        "ardometyp",
+        "reservationer",
+        "debatt",
+        "sokdata.parti_kod",
+        "sokdata.parti_namn",
+        "sokdata.parti_mandat",
     ])
 
 def transform(
@@ -148,6 +183,10 @@ def transform(
             df = reject_voteringar(df)
         elif name == "anforanden":
             df = reject_anforanden(df)
+        elif name == "kalender":
+            df = reject_kalender(df)
+        elif name == "dokument":
+            df = reject_dokument(df)
 
         result[name] = df
 
