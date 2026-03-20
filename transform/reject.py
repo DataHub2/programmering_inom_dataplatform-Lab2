@@ -165,18 +165,26 @@ def transform(
     }
 
     result = {}
+
     for name, (df, id_col) in datasets.items():
 
-        # Plocka ut bara flaggor som tillhör detta dataset
         relevant_flags = {
             k: v for k, v in flags.items()
             if v["flag_source"].eq(name).any()
         }
 
-        #lägg till flag_reason på datasetet
         df = add_flags(df, relevant_flags, id_col)
 
-        #ta bort onödiga kolumner per dataset
+        # Rejekta rader med null ID
+        df = df[df[id_col].notna() & (df[id_col].astype(str).str.strip() != "")]
+
+        # Rejekta rader med felaktigt ID-format (endast anforanden)
+        if name == "anforanden":
+            df = df[df["intressent_id"].apply(
+                lambda x: pd.isna(x) or "e+" not in str(x).lower()
+            )]
+
+        # Rejekta kolumner per dataset
         if name == "ledamoter":
             df = reject_ledamoter(df)
         elif name == "voteringar":
