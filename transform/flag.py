@@ -250,35 +250,6 @@ def flag_tom_anforandetext(df_anforanden: pd.DataFrame) -> pd.DataFrame:
     return flagged
 
 
-def flag_tom_kolumn(
-    df: pd.DataFrame, kolumn: str, source: str, flag_reason: str
-) -> pd.DataFrame:
-    """
-    Flags all rows when an entire column is null — used for iort and organ
-    which are almost entirely empty in the source data.
-
-    Args:
-        df:           Cleaned DataFrame
-        kolumn:       Column name to check
-        source:       Source name for traceability
-        flag_reason:  Flag reason string
-
-    Returns:
-        DataFrame of flagged rows, or empty DataFrame if column has any values
-    """
-    if kolumn not in df.columns:
-        return pd.DataFrame()
-
-    # Only flag if the entire column is null — not partial nulls
-    if df[kolumn].isna().all():
-        flagged = df.copy()
-        flagged["flag_reason"] = flag_reason
-        flagged["flag_source"] = source
-        flagged["flag_col"] = kolumn
-        return flagged
-
-    return pd.DataFrame()
-
 
 def flag_foddar_outlier(df_ledamoter: pd.DataFrame) -> pd.DataFrame:
     """
@@ -441,13 +412,6 @@ def run_flags(
     # Empty body text in speeches
     flags["tom_anforandetext"] = flag_tom_anforandetext(df_anforanden)
 
-    # Entirely empty columns
-    flags["tom_iort"] = flag_tom_kolumn(
-        df_ledamoter, kolumn="iort", source="ledamoter", flag_reason="tom_iort"
-    )
-    flags["tom_organ"] = flag_tom_kolumn(
-        df_dokument, kolumn="organ", source="dokument", flag_reason="tom_organ"
-    )
 
     # Birth year outliers
     flags["foddar_outlier"] = flag_foddar_outlier(df_ledamoter)
