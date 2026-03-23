@@ -1,43 +1,47 @@
 import streamlit as st
-from utils.supabase_client import init_supabase
 from sqlalchemy import create_engine, text
 import pandas as pd
+from streamlit import title
+
 from utils.supabase_client import init_db
-import os
 
 st.title("Riksdagen i siffror")
 st.write("Ledamöter, röster och debatter — samlat i en vy")
 
-
 engine = init_db()
 
 @st.cache_data(ttl=3600)
-def hamta_aktiva_talare():
+def hamta_kpier():
     query = text("""
-        SELECT
-            talare,
-            parti,
-            COUNT(*) AS antal_anforanden,
-            COUNT(DISTINCT avsnittsrubrik) AS antal_amnen
-        FROM speeches_raw
-        GROUP BY talare, parti
-        ORDER BY antal_anforanden DESC
+       SELECT
+            (SELECT COUNT(DISTINCT intressent_id) FROM public.members_raw) AS antal_ledamoter,
+            (SELECT COUNT(DISTINCT parti) FROM public.members_raw WHERE parti != '-') AS antal_partier,
+            (SELECT COUNT(DISTINCT talare) FROM public.speeches_raw) AS antal_talare,
+            (SELECT ROUND(COUNT(*) FILTER (WHERE rost = 'Frånvarande') * 100.0 / COUNT(*), 1)
+             FROM public.votes_raw WHERE parti != '-') AS franvaro_pct
     """)
     with engine.connect() as conn:
-        return pd.read_sql(query, conn)
+        return pd.read_sql(query, conn).iloc[0]
 
-df_talare = hamta_aktiva_talare()
+st.markdown("""
+<style>
+[data-testid="stMetric"] {
+    background-color: #567AC8;
+    padding: 15px;
+    border-radius: 5px;
+}
+</style>
+""", unsafe_allow_html=True)
 
-# Filter i Streamlit
-partier = sorted(df_talare["parti"].unique())
-valt_parti = st.selectbox("Filtrera på parti", ["Alla"] + partier)
+kpi = hamta_kpier()
 
-if valt_parti != "Alla":
-    df_filtrerad = df_talare[df_talare["parti"] == valt_parti]
-else:
-    df_filtrerad = df_talare
+st.text("senaste riksmötet")
+col1, col2, col3 = st.columns(3)
+col1.metric("Ledamöter", f"{int(kpi['antal_ledamoter'])}")
+col2.metric("Partier", int(kpi['antal_partier']))
+col3.metric("Talare", int(kpi['antal_talare']))
 
-st.dataframe(df_filtrerad)
+
 
 
 st.caption("Källa: Riksdagen")
