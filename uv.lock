@@ -1227,6 +1227,7 @@ requires-dist = [
     { name = "confluent-kafka", specifier = ">=2.13.2" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.135.1" },
     { name = "pandas", specifier = ">=1.4.0,<3" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.3" },
     { name = "sqlalchemy", specifier = ">=2.0.48" },
     { name = "streamlit", specifier = ">=1.36.0" },
