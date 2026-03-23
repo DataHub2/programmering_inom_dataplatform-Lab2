@@ -50,6 +50,7 @@ def reject_ledamoter(df: pd.DataFrame) -> pd.DataFrame:
         "sorteringsnamn",        # redundant — finns i efternamn + tilltalsnamn
         "personuppdrag.uppdrag", # stor JSON-blob
         "personuppgift.uppgift", # stor JSON-blob
+        "iort",                  # null
     ])
 
 def reject_voteringar(df: pd.DataFrame) -> pd.DataFrame:
@@ -69,6 +70,7 @@ def reject_anforanden(df: pd.DataFrame) -> pd.DataFrame:
         "protokoll_url_www",  # url
         "systemdatum",        # internt
         "systemnyckel",       # internt
+        "underrubrik",        # 100% null
     ])
 
 def reject_kalender(df: pd.DataFrame) -> pd.DataFrame:
@@ -81,6 +83,7 @@ def reject_kalender(df: pd.DataFrame) -> pd.DataFrame:
         "XRDDTSTARTSTATUS",# internt statusfält
         "XRDSOURCE",       # intern källkod (t.ex. "Safir")
         "XRDSORT",         # intern sorteringstid
+        "COMMENT",         # 100% null
     ])
 
 def reject_dokument(df: pd.DataFrame) -> pd.DataFrame:
@@ -105,6 +108,38 @@ def reject_dokument(df: pd.DataFrame) -> pd.DataFrame:
         "sokdata.kalenderprio",           # intern prioritet
         "egenskaper.egenskap",            # intern metadata-blob
         "avdelningar.avdelning",          # redundant med avdelning
+        "traff",                          # sökträffar — samma som score
+        "domain",                         # alltid "rdwebb"
+        "database",                       # alltid "kalender"
+        #alla 100% null nedanför
+        "plats",
+        "klockslag",
+        "inlamnad",
+        "motionstid",
+        "tilldelat",
+        "url",
+        "organ",
+        "relaterat_id",
+        "beteckning",
+        "nummer",
+        "dokintressent",
+        "filbilaga",
+        "struktur",
+        "audio",
+        "video",
+        "debattgrupp",
+        "debattdag",
+        "beslutsdag",
+        "beredningsdag",
+        "justeringsdag",
+        "beslutad",
+        "debattsekunder",
+        "ardometyp",
+        "reservationer",
+        "debatt",
+        "sokdata.parti_kod",
+        "sokdata.parti_namn",
+        "sokdata.parti_mandat",
     ])
 
 def transform(
@@ -130,24 +165,36 @@ def transform(
     }
 
     result = {}
+
     for name, (df, id_col) in datasets.items():
 
-        # Plocka ut bara flaggor som tillhör detta dataset
         relevant_flags = {
             k: v for k, v in flags.items()
             if v["flag_source"].eq(name).any()
         }
 
-        #lägg till flag_reason på datasetet
         df = add_flags(df, relevant_flags, id_col)
 
-        #ta bort onödiga kolumner per dataset
+        # Rejekta rader med null ID
+        df = df[df[id_col].notna() & (df[id_col].astype(str).str.strip() != "")]
+
+        # Rejekta rader med felaktigt ID-format (endast anforanden)
+        if name == "anforanden":
+            df = df[df["intressent_id"].apply(
+                lambda x: pd.isna(x) or "e+" not in str(x).lower()
+            )]
+
+        # Rejekta kolumner per dataset
         if name == "ledamoter":
             df = reject_ledamoter(df)
         elif name == "voteringar":
             df = reject_voteringar(df)
         elif name == "anforanden":
             df = reject_anforanden(df)
+        elif name == "kalender":
+            df = reject_kalender(df)
+        elif name == "dokument":
+            df = reject_dokument(df)
 
         result[name] = df
 
