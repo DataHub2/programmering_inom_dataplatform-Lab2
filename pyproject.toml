@@ -14,5 +14,4 @@ dependencies = [
     "supabase>=2.28.3",
     "sqlalchemy>=2.0.48",
     "psycopg[binary]>=3.3.3",
-    "psycopg[binary]>=3.0",
 ]
