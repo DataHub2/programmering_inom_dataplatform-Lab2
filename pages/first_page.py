@@ -1,7 +1,6 @@
 import streamlit as st
 from sqlalchemy import create_engine, text
 import pandas as pd
-from streamlit import title
 import altair as alt
 
 from utils.supabase_client import init_db
