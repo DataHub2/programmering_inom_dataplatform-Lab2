@@ -54,29 +54,26 @@ def antal_narvarande_per_parti():
     with engine.connect() as conn:
         return pd.read_sql(query, conn)
 
-st.space(size="medium")
+st.divider()
 
-# Hämta data
 df = antal_narvarande_per_parti()
 df['parti'] = df['parti'].str.upper()
 
-# Definiera partifärger (exempel på riksdagspartiernas färger)
 parti_colors = {
-    "S": "#d97a7a",   # mild röd
-    "M": "#6b8fc7",   # ljusblå
-    "SD": "#5a6b91",  # mörkare blå
-    "C": "#7fbf8f",   # mjuk grön
-    "V": "#d37ca3",   # mild rosa
-    "KD": "#e7d488",  # mjuk gul
-    "L": "#f3eda0",   # ljusgul
-    "MP": "#a2c87b",  # mild grön
+    "S": "#d97a7a",
+    "M": "#6b8fc7",
+    "SD": "#5a6b91",
+    "C": "#7fbf8f",
+    "V": "#d37ca3",
+    "KD": "#e7d488",
+    "L": "#f3eda0",
+    "MP": "#a2c87b",
     "-": "#FFFAFA"
 }
 
-# Horisontell barchart
 chart = alt.Chart(df).mark_bar().encode(
     x=alt.X('antal_ledamoter:Q', title='Antal ledamöter'),
-    y=alt.Y('parti:N', sort='-x', title='Parti'),  # partier på y-axeln
+    y=alt.Y('parti:N', sort='-x', title='Parti'),
     color=alt.Color('parti:N', scale=alt.Scale(domain=list(parti_colors.keys()), range=list(parti_colors.values()))),
     tooltip=['parti', 'antal_ledamoter']
 ).properties(
@@ -84,16 +81,14 @@ chart = alt.Chart(df).mark_bar().encode(
     height=400,
     title='Antal närvarande ledamöter per parti'
 ).configure_axis(
-    labelColor="#12255C",   # färg på axeltext
-    titleColor="#12255C"    # färg på axeltitlar
+    labelColor="#12255C",
+    titleColor="#12255C"
 ).configure_title(
-    color="#12255C"         # färg på diagramtitel
+    color="#12255C"
 )
-
 
 st.altair_chart(chart, use_container_width=True)
 
-# Funktion för att hämta könsfördelning per parti från din databas
 @st.cache_data(ttl=3600)
 def konsfordelning_per_parti():
     query = text("""
@@ -104,19 +99,16 @@ def konsfordelning_per_parti():
     """)
     with engine.connect() as conn:
         df = pd.read_sql(query, conn)
-        df['parti'] = df['parti'].str.upper()  # standardisera partinamn
+        df['parti'] = df['parti'].str.upper()
         return df
 
-# Hämta data
 df = konsfordelning_per_parti()
 
-# Mutade färger för kön
 kon_colors = {
-    "man": "#6b8fc7",   # mild blå för män
-    "kvinna": "#d97a7a",   # mild rosa för kvinnor
+    "man": "#6b8fc7",
+    "kvinna": "#d97a7a",
 }
 
-# Skapa horisontell stacked bar chart
 chart = alt.Chart(df).mark_bar().encode(
     x=alt.X('antal_ledamoter:Q', title='Antal ledamöter'),
     y=alt.Y('parti:N', sort='-x', title='Parti'),
@@ -129,13 +121,36 @@ chart = alt.Chart(df).mark_bar().encode(
     height=400,
     title='Könsfördelning per parti'
 ).configure_axis(
-    labelColor="#12255C",   # färg på axeltext
-    titleColor="#12255C"    # färg på axeltitlar
+    labelColor="#12255C",
+    titleColor="#12255C"
 ).configure_title(
-    color="#12255C"         # färg på diagramtitel
+    color="#12255C"
 )
 
 st.altair_chart(chart, use_container_width=True)
 
+# --- Ordbok ---
+st.divider()
+with st.expander("Ordbok — riksdagstermer förklarade"):
+    st.markdown("""
+    | Term | Förklaring |
+    |---|---|
+    | **Anförande** | Ett tal som en ledamot håller i kammaren under en debatt |
+    | **Replik** | Ett kort svar på ett anförande, max 1 minut |
+    | **Votering** | Omröstning där ledamöterna trycker Ja, Nej eller Avstår |
+    | **Betänkande** | Utskottets sammanfattning och förslag i en fråga, t.ex. AU10 |
+    | **Utskott** | Arbetsgrupp som bereder ärenden innan de tas upp i kammaren |
+    | **Kammaren** | Riksdagens plenisal där alla 349 ledamöter samlas för debatt och beslut |
+    | **Riksmöte** | Riksdagens arbetsår, löper från september till juni, t.ex. 2025/26 |
+    | **Proposition** | Förslag från regeringen till riksdagen om ny lag eller ändring |
+    | **Motion** | Förslag från en eller flera ledamöter, ofta som svar på en proposition |
+    | **Bifall** | Riksdagen röstar ja — förslaget går igenom |
+    | **Avslag** | Riksdagen röstar nej — förslaget faller |
+    | **Bordläggning** | Beslut skjuts upp till ett senare sammanträde |
+    | **Interpellation** | En skriftlig fråga från en ledamot till en minister, besvaras i kammaren |
+    | **Kvittning** | Överenskommelse där en frånvarande ledamot från ett parti matchas mot en frånvarande från ett annat, så att styrkeförhållandet i voteringen inte påverkas |
+    | **Valkrets** | Det geografiska område en ledamot är vald från |
+    | **Ersättare** | Ledamot som tillfälligt träder in när en ordinarie ledamot är ledig |
+    """)
 
 st.caption("Källa: Riksdagen")
