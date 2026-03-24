@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from utils.supabase_client import init_db
 
 st.title("Voteringar")
@@ -19,6 +19,26 @@ PARTI_FARGER = {
     "L":  "#f3eda0",
     "MP": "#a2c87b",
     "-":  "#cccccc",
+}
+
+UTSKOTT_FORKLARINGAR = {
+    "AU":  "Arbetsmarknadsutskottet — behandlar frågor om arbetsmarknad, arbetsmiljö och arbetsrätt",
+    "CU":  "Civilutskottet — behandlar frågor om civilrätt, bostäder och konsumentfrågor",
+    "FiU": "Finansutskottet — behandlar statsbudgeten och finanspolitik",
+    "FöU": "Försvarsutskottet — behandlar frågor om försvar och säkerhetspolitik",
+    "JuU": "Justitieutskottet — behandlar frågor om rättsväsende, polis och kriminalvård",
+    "KU":  "Konstitutionsutskottet — granskar regeringen och behandlar grundlagsfrågor",
+    "KrU": "Kulturutskottet — behandlar frågor om kultur, medier och idrott",
+    "MJU": "Miljö- och jordbruksutskottet — behandlar miljö, jordbruk och livsmedel",
+    "NU":  "Näringsutskottet — behandlar näringspolitik, energi och IT",
+    "SfU": "Socialförsäkringsutskottet — behandlar pensioner, sjukförsäkring och föräldraförsäkring",
+    "SkU": "Skatteutskottet — behandlar skattefrågor",
+    "SoU": "Socialutskottet — behandlar hälso- och sjukvård samt socialtjänst",
+    "TU":  "Trafikutskottet — behandlar transport, infrastruktur och kommunikation",
+    "UbU": "Utbildningsutskottet — behandlar skola, högre utbildning och forskning",
+    "UU":  "Utrikesutskottet — behandlar utrikespolitik och internationella relationer",
+    "UöU": "Sammansatta utrikes- och försvarsutskottet — behandlar gemensamma utrikes- och försvarsfrågor",
+    "EUN": "EU-nämnden — samordnar Sveriges EU-politik inför ministerrådsmöten",
 }
 
 
@@ -53,6 +73,14 @@ def hamta_beteckningar() -> list[str]:
 df = hamta_voteringar()
 beteckningar = hamta_beteckningar()
 
+# --- Utskottsordbok ---
+with st.expander("Ordbok — vad betyder förkortningarna?"):
+    st.caption("Beteckningar börjar alltid med utskottets förkortning följt av betänkandets nummer, t.ex. AU10 = Arbetsmarknadsutskottets betänkande nr 10.")
+    for kod, forklaring in UTSKOTT_FORKLARINGAR.items():
+        st.markdown(f"**{kod}** — {forklaring}")
+
+st.divider()
+
 # --- Filter ---
 st.markdown("### Filtrera")
 col1, col2 = st.columns(2)
@@ -70,7 +98,6 @@ with col2:
         default=[],
     )
 
-# Tillämpa filter
 df_filtered = df.copy()
 if vald_beteckning != "Alla":
     df_filtered = df_filtered[df_filtered["beteckning"] == vald_beteckning]
@@ -131,6 +158,7 @@ st.altair_chart(chart_rost, use_container_width=True)
 st.markdown("### Enighet inom parti")
 st.caption("Andel ledamöter som röstade på majoritetens linje per parti")
 
+
 def berakna_enighet(df: pd.DataFrame) -> pd.DataFrame:
     result = []
     for parti, grp in df.groupby("parti"):
@@ -146,6 +174,7 @@ def berakna_enighet(df: pd.DataFrame) -> pd.DataFrame:
             "enighet_%": enighet_pct,
         })
     return pd.DataFrame(result).sort_values("enighet_%", ascending=False)
+
 
 df_enighet = berakna_enighet(df_filtered)
 
