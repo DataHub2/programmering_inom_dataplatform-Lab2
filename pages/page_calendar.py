@@ -11,17 +11,16 @@ st.write("Kommande aktiviteter i kammaren")
 # Initialize the database engine
 engine = init_db()
 
-# Color map — one color per activity type, used in charts and calendar cards
 AKTIVITET_FARGER = {
-    "arbetsplenum":                             "#6b8fc7",
-    "votering":                                 "#7fbf8f",
-    "interpellationsdebatt":                    "#d97a7a",
-    "frågestund":                               "#e7d488",
-    "statsministerns frågestund":               "#f3eda0",
-    "partiledardebatt":                         "#d37ca3",
-    "återrapportering":                         "#a2c87b",
-    "debatt med anledning av vårpropositionen": "#c8a87b",
-    "avslutning":                               "#cccccc",
+    "arbetsplenum":                             "#7f95a6",  # dämpad blågrå
+    "votering":                                 "#8faa98",  # salvia
+    "interpellationsdebatt":                    "#b38a8a",  # mjuk terrakotta
+    "frågestund":                               "#c9bfa3",  # varm sand
+    "statsministerns frågestund":               "#d8d1b2",  # ljus sand
+    "partiledardebatt":                         "#a79bbf",  # mjuk lavendel
+    "återrapportering":                         "#9fb0a1",  # grågrön
+    "debatt med anledning av vårpropositionen": "#bfa58a",  # varm beige/brun
+    "avslutning":                               "#aeb4b9",  # neutral blågrå
 }
 
 
