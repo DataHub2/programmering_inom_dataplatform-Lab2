@@ -40,10 +40,10 @@ def build_full_name(df: pd.DataFrame) -> pd.Series:
             df[first_col].fillna("").astype(str).str.strip()
             + " "
             + df[last_col].fillna("").astype(str).str.strip()
-        ).str.strip()
+        ).str.strip().str.title()
 
     if last_col:
-        return df[last_col].fillna("").astype(str).str.strip()
+        return df[last_col].fillna("").astype(str).str.strip().str.title()
 
     return pd.Series(["Okänt namn"] * len(df), index=df.index)
 
@@ -116,7 +116,7 @@ else:
 members_df["parti_visning"] = ""
 
 if member_party_col_direct:
-    members_df["parti_visning"] = members_df[member_party_col_direct].apply(clean_text)
+    members_df["parti_visning"] = members_df[member_party_col_direct].apply(clean_text).str.upper()
 
 else:
     party_member_id_col = pick_col(parties_df, ["intressent_id", "id", "person_id", "ledamot_id"])
@@ -151,7 +151,7 @@ members_df["parti_visning"] = members_df["parti_visning"].replace("", "Okänt")
 # Valkrets
 
 if member_constituency_col:
-    members_df["valkrets_visning"] = members_df[member_constituency_col].apply(clean_text)
+    members_df["valkrets_visning"] = members_df[member_constituency_col].apply(clean_text).str.title()
 else:
     party_member_id_col = pick_col(parties_df, ["intressent_id", "id", "person_id", "ledamot_id"])
     party_const_col = pick_col(parties_df, ["valkrets", "district", "constituency"])
@@ -184,7 +184,7 @@ members_df["valkrets_visning"] = members_df["valkrets_visning"].replace("", "Ok�
 # Kön och namn
 
 if member_gender_col:
-    members_df["kon_visning"] = members_df[member_gender_col].apply(clean_text)
+    members_df["kon_visning"] = members_df[member_gender_col].apply(clean_text).str.title()
 else:
     members_df["kon_visning"] = "Okänd"
 
@@ -379,7 +379,7 @@ if not person_speeches.empty:
         person_speeches["text_visning"] = ""
 
     if speech_title_col and speech_title_col in person_speeches.columns:
-        person_speeches["titel_visning"] = person_speeches[speech_title_col].apply(clean_text)
+        person_speeches["titel_visning"] = person_speeches[speech_title_col].apply(clean_text).str.title()
     else:
         person_speeches["titel_visning"] = ""
 
@@ -444,8 +444,8 @@ if not aktiva_talare_df.empty:
     if talare_col and parti_col and anforanden_col:
         aktiva_visning = aktiva_talare_df.copy()
 
-        aktiva_visning["talare_visning"] = aktiva_visning[talare_col].apply(clean_text)
-        aktiva_visning["parti_visning"] = aktiva_visning[parti_col].apply(clean_text)
+        aktiva_visning["talare_visning"] = aktiva_visning[talare_col].apply(clean_text).str.title()
+        aktiva_visning["parti_visning"] = aktiva_visning[parti_col].apply(clean_text).str.upper()
         aktiva_visning["anforanden_visning"] = pd.to_numeric(
             aktiva_visning[anforanden_col], errors="coerce"
         ).fillna(0).astype(int)

@@ -12,15 +12,15 @@ st.write("Kommande aktiviteter i kammaren")
 engine = init_db()
 
 AKTIVITET_FARGER = {
-    "arbetsplenum":                             "#567AC8",
-    "votering":                                 "#567AC8",
-    "interpellationsdebatt":                    "#567AC8",
-    "frågestund":                               "#567AC8",
-    "statsministerns frågestund":               "#567AC8",
-    "partiledardebatt":                         "#567AC8",
-    "återrapportering":                         "#567AC8",
-    "debatt med anledning av vårpropositionen": "#567AC8",
-    "avslutning":                               "#567AC8",
+    "Arbetsplenum":                             "#7f95a6",  # dämpad blågrå
+    "Votering":                                 "#8faa98",  # salvia
+    "Interpellationsdebatt":                    "#b38a8a",  # mjuk terrakotta
+    "Frågestund":                               "#c9bfa3",  # varm sand
+    "Statsministerns Frågestund":               "#d8d1b2",  # ljus sand
+    "Partiledardebatt":                         "#a79bbf",  # mjuk lavendel
+    "Återrapportering":                         "#9fb0a1",  # grågrön
+    "Debatt Med Anledning Av Vårpropositionen": "#bfa58a",  # varm beige/brun
+    "Avslutning":                               "#aeb4b9",  # neutral blågrå
 }
 
 
@@ -48,7 +48,7 @@ def hamta_kalender() -> pd.DataFrame:
 
     # CATEGORIES looks like "kammaren,votering,debatt och beslut,kamm"
     # The second item (index 1) is the activity type we want
-    df["aktivitet"] = df["CATEGORIES"].str.split(",").str[1].str.strip()
+    df["aktivitet"] = df["CATEGORIES"].str.split(",").str[1].str.strip().str.title()
 
     # Format time as "HH:MM" for display
     df["tid"] = df["datum"].dt.strftime("%H:%M")

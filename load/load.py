@@ -62,7 +62,7 @@ def log_pipeline(
     print(f" Pipeline-logg sparad för {source} — {records_inserted} rader, status: {status}")
 
 
-def consume():
+def consume(stop_event=None):
     """Listens to Kafka and writes new data to Supabase automatically."""
     consumer = Consumer({
         "bootstrap.servers": "kafka:29092",
@@ -72,6 +72,8 @@ def consume():
     consumer.subscribe(list(TABLE_MAP.keys()))
     print("Listening on Kafka...")
     while True:
+        if stop_event and stop_event.is_set():
+            break
         msg = consumer.poll(1.0)
         if msg is None or msg.error():
             continue
@@ -79,6 +81,7 @@ def consume():
         table = TABLE_MAP[msg.topic()]
         supabase.table(table).upsert(record).execute()
         print(f"Wrote row to {table}")
+    consumer.close()
 
 
 if __name__ == "__main__":

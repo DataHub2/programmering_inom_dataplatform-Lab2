@@ -40,6 +40,8 @@ def hamta_anforanden() -> pd.DataFrame:
     with engine.connect() as conn:
         df = pd.read_sql(query, conn)
         df["parti"] = df["parti"].str.upper()
+        df["talare"] = df["talare"].str.title()
+        df["avsnittsrubrik"] = df["avsnittsrubrik"].str.title()
         df["dok_datum"] = pd.to_datetime(df["dok_datum"], errors="coerce")
         return df
 

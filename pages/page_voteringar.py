@@ -59,6 +59,7 @@ def hamta_voteringar() -> pd.DataFrame:
         df = pd.read_sql(query, conn)
         df["parti"] = df["parti"].str.upper()
         df["rost"] = df["rost"].str.lower()
+        df["namn"] = df["namn"].str.title()
         return df
 
 
