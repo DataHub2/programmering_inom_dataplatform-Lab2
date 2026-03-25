@@ -1,5 +1,7 @@
 ## Riksdagens Data Plattform 
 
+Länk till dashboard: https://programmeringinomdataplatform-lab2-huky8ttdgiyhtvykvg6unv.streamlit.app/
+
 ### Denna plattform är byggd för att automatisera insamling, bearbetning och lagring av data från Sveriges Riksdag. Systemet fokuserar på skalbarhet och händelsestyrd arkitektur (Event-Driven Architecture).
 
 
