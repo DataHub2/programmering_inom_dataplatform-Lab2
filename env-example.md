@@ -1,0 +1,10 @@
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD= [PASSWORD]
+POSTGRES_DB=riksdagen_db
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+KAFKA_TOPIC=riksdagen_raw_data
+SUPABASE_URL=https://abdfbnfoxhzlowwkxqpd.supabase.co/
+SUPABASE_KEY= [KEY]
+SUPABASE_DB_URL=postgresql+psycopg://postgres.[PASSWORD]@aws-1-eu-central-2.pooler.supabase.com:6543/postgres

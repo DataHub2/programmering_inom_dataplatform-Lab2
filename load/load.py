@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import sys
-sys.path.insert(0, "transform")
+sys.path.insert(0, "../transform")
 
 from clean import clean
 from reject import transform
@@ -55,11 +55,11 @@ def consume(): # -> här laddar kafka in i auto mode
 
 if __name__ == "__main__":
     # read raw data
-    df_ledamoter  = clean(pd.read_csv("data/ledamoter.csv"))
-    df_voteringar = clean(pd.read_csv("data/voteringar.csv"))
-    df_anforanden = clean(pd.read_csv("data/anforanden.csv"))
-    df_kalender   = clean(pd.read_csv("data/kalender.csv"))
-    df_dokument   = clean(pd.read_csv("data/dokument.csv"))
+    df_ledamoter  = clean(pd.read_csv("../data/ledamoter.csv"))
+    df_voteringar = clean(pd.read_csv("../data/voteringar.csv"))
+    df_anforanden = clean(pd.read_csv("../data/anforanden.csv"))
+    df_kalender   = clean(pd.read_csv("../data/kalender.csv"))
+    df_dokument   = clean(pd.read_csv("../data/dokument.csv"))
 
     print(" Clean klar")
 
