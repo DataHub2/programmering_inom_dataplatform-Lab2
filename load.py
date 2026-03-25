@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     print(" Clean klar")
 
-    # run full transform (flag + reject)
+    # run full transform (flag + reject).
     result = transform(df_ledamoter, df_voteringar, df_anforanden, df_kalender, df_dokument)
 
     print(" Transform klar")
