@@ -4,7 +4,7 @@ import json                          # [TILLAGD FRÅN ZAKARIA] behövs för att 
 from fastapi import HTTPException
 from confluent_kafka import Producer  # [TILLAGD FRÅN ZAKARIA] Kafka-klient för att streama data
 
-from format_files import format_files
+from extract.format_files import format_files
 
 # [TILLAGD FRÅN ZAKARIA] Konfigurerar uppkopplingen mot Kafka-brokern
 kafka_conf = {'bootstrap.servers': 'kafka:29092'}

@@ -1,6 +1,6 @@
 import pandas as pd
-from clean import clean
-from flag import run_flags
+from transform.clean import clean
+from transform.flag import run_flags
 
 def add_flags(
     df: pd.DataFrame,
