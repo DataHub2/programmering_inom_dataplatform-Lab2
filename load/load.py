@@ -3,8 +3,8 @@ import os
 import sys
 sys.path.insert(0, "../transform")
 
-from clean import clean
-from reject import transform
+from transform.clean import clean
+from transform.reject import transform
 from confluent_kafka import Consumer
 from supabase import create_client
 from dotenv import load_dotenv
@@ -35,8 +35,8 @@ def load_to_supabase(df: pd.DataFrame, table_name: str):
         supabase.table(table_name).upsert(batch).execute()
     print(f" {len(records)} rader laddade till {table_name}")
 
-def consume(): # -> här laddar kafka in i auto mode
-    """listens to kafka and writes new data to supabase automatically""" 
+def consume(stop_event):
+    """listens to kafka and writes new data to supabase automatically"""
     consumer = Consumer({
         "bootstrap.servers": "kafka:29092",
         "group.id": "supabase-loader",
@@ -44,7 +44,7 @@ def consume(): # -> här laddar kafka in i auto mode
     })
     consumer.subscribe(list(TABLE_MAP.keys()))
     print("listening on Kafka...")
-    while True:
+    while not stop_event.is_set():  # stoppar städigt när main.py stänger ner
         msg = consumer.poll(1.0)
         if msg is None or msg.error():
             continue
@@ -52,6 +52,7 @@ def consume(): # -> här laddar kafka in i auto mode
         table = TABLE_MAP[msg.topic()]
         supabase.table(table).upsert(record).execute()
         print(f"wrote row to {table}")
+    consumer.close()  # stäng uppkopplingen städigt vid shutdown
 
 if __name__ == "__main__":
     # read raw data
