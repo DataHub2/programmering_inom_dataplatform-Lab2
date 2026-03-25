@@ -12,15 +12,15 @@ st.write("Kommande aktiviteter i kammaren")
 engine = init_db()
 
 AKTIVITET_FARGER = {
-    "arbetsplenum":                             "#7f95a6",  # dämpad blågrå
-    "votering":                                 "#8faa98",  # salvia
-    "interpellationsdebatt":                    "#b38a8a",  # mjuk terrakotta
-    "frågestund":                               "#c9bfa3",  # varm sand
-    "statsministerns frågestund":               "#d8d1b2",  # ljus sand
-    "partiledardebatt":                         "#a79bbf",  # mjuk lavendel
-    "återrapportering":                         "#9fb0a1",  # grågrön
-    "debatt med anledning av vårpropositionen": "#bfa58a",  # varm beige/brun
-    "avslutning":                               "#aeb4b9",  # neutral blågrå
+    "arbetsplenum":                             "#567AC8",
+    "votering":                                 "#567AC8",
+    "interpellationsdebatt":                    "#567AC8",
+    "frågestund":                               "#567AC8",
+    "statsministerns frågestund":               "#567AC8",
+    "partiledardebatt":                         "#567AC8",
+    "återrapportering":                         "#567AC8",
+    "debatt med anledning av vårpropositionen": "#567AC8",
+    "avslutning":                               "#567AC8",
 }
 
 
